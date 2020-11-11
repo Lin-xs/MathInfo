@@ -1,0 +1,488 @@
+% ---*--- coding:UTF-8 ---*---
+% gougu.tex: 勾股定理
+
+\documentclass[UTF8]{ctexbook}
+\include{package}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{subfigure}
+\usepackage{amssymb}
+\newcommand{\diag}{\textup{diag}}
+\newcommand{\Frobenius}[1]{\Vert #1 \Vert}
+\newcommand{\asf}[2]{$#1_1, #1_2, \cdots, #1_#2$}
+
+
+\title{信息科学中的数学}
+\author{林晓疏}
+\date{\today}
+
+\bibliographystyle{plain}
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\mainmatter%重新开始页码计数
+
+\chapter{高维空间}
+
+\section{大数定律}
+我们直觉上能够感觉到，对于某项数据，当样本数量足够大的时候，其平均值就会越来越接近这项数据的期望。在统计学上用\textbf{大数定理}来描述，即
+\begin{equation}
+	\tu{Prob}\xk{\abs{\frac{x_1 + x_2 + \cdots + x_n}{n} - E(x)} \ge \epsilon } \le \frac{Var(x)}{n \epsilon^2} 
+	\label{thm:BigNum}
+\end{equation}
+
+其中$E(x)$和$Var(x)$分别代表了$x$的数学期望和方差。为证明这一定律，我们使用两个不等式作为引理。
+
+\begin{lemma}[Markov's inequality]
+设$x$是一个非负随机变量。对于$\forall a>0$，有
+\begin{equation}
+	P(x\ge a) \le \frac{E(x)}{a}
+	\label{neq:Markov}
+\end{equation}
+\end{lemma}
+
+\begin{lproof}
+根据随机变量期望的定义可得
+\begin{equation}
+\begin{split}
+E(x) &= \int_{0}^{+\infty} xp(x)\dd x \int_{0}^{a} xp(x)\dd x + \int_{a}^{+\infty} xp(x) \dd x
+\\
+&\ge \int_{a}^{+\infty} xp(x) \dd x \ge a\int_{a}^{+\infty}p(x) \dd x = aP(x\ge a)
+\end{split}
+\end{equation}
+
+因此有$P(x \ge a) \le \frac{E(x)}{a}$。
+\end{lproof}
+
+\begin{tuilun}
+$P(x \ge bE(x)) \le \frac{1}{b}$
+\end{tuilun}
+
+马尔可夫不等式仅仅使用了数据的期望就控制住了数据“尾部”的概率。下面的切比雪夫不等式利用数据的方差给出了更强的约束。
+
+\begin{lemma}[Chebyshev's inequality]
+设$x$是一个非负随机变量。对于$\forall c>0$，有
+\begin{equation}
+	P(\abs{x - E(x)} \ge c) \le \frac{Var(x)}{c^2}
+	\label{neq:Cheby}
+\end{equation}
+\end{lemma}
+
+\begin{lproof}
+我们知道$P(\abs{x - E(x)} \ge c) = P(\abs{x - E(x)}^2 \ge c^2)$。不妨记$y = \abs{x - E(x)}^2$，显然有$E(y) = Var(x)$，运用公式(\ref{neq:Markov})即得：
+\begin{equation}
+	P(\abs{x - E(x)} \ge c) = P(\abs{x - E(x)}^2 \ge c^2) \le \frac{E(y)}{c^2} = \frac{Var(x)}{c^2}
+\end{equation}
+\end{lproof}
+
+
+	此外，还有一些计算公式：
+\begin{equation}
+\begin{split}
+E(x+y) &= E(x) + E(y) 
+\\
+Var(x-c) &= Var(x)
+\\
+Var(cx) &= c^2Var(x)
+\end{split}
+\end{equation}
+
+	此外，如果$x, y$相互独立，那么有$E(xy)  = E(x)E(y)$。因此对于两个独立的随机变量，有
+\begin{equation}
+	Var(x+y) = E(x+y)^2 - E^2(x+y) = Var(x) + Var(y)
+\end{equation}
+
+\begin{thm}[大数定理]
+设$x_1, x_2, \cdots, x_n$是随机变量$x$的$n$个独立样本。那么有
+\begin{equation}
+	\tu{Prob}\xk{\abs{\frac{x_1 + x_2 + \cdots + x_n}{n} - E(x)} \ge \epsilon } \le \frac{Var(x)}{n \epsilon^2} 
+\end{equation}
+\end{thm}
+
+\begin{proof}
+由于$E(\frac{x_1 + x_2 + \cdots + x_n}{n}) = E(x)$，因此
+\begin{equation}
+\begin{split}
+P\xk{\abs{\frac{x_1 + x_2 + \cdots + x_n}{n} - E(x)} \ge \epsilon} &=  P\xk{\abs{\frac{x_1 + x_2 + \cdots + x_n}{n} - E\xk{\frac{x_1 + x_2 + \cdots + x_n}{n}}} \ge \epsilon}
+\\
+&\le \frac{Var\xk{\frac{x_1 + x_2 + \cdots + x_n}{n}}}{\epsilon^2}
+\\
+&= \frac{1}{n^2\epsilon^2}Var(x_1 + x_2 + \cdots + x_n)
+\\
+&= \frac{1}{n^2\epsilon^2}\xk{Var(x_1) + Var(x_2) + \cdots + Var(x_n)}
+\\
+&= \frac{Var(x)}{n \epsilon^2} 
+\end{split}
+\end{equation}
+\end{proof}
+
+\section{高维空间中的几何}
+
+现在我们来考虑$\mathbb R^d$中的几何。高维空间中的几何与二维、三维有许多截然不同的性质。比如，设$A$是$\mathbb R^d $中的一个单位球体，很容易得出$d$维空间中$1-\epsilon \le r \le 1$描述的单位球体表面厚度为$\epsilon$的球壳的体积是$V_\epsilon = [1-(1-\epsilon)^d] \tu{volume}(A)$，显然有
+\begin{equation}
+	\lim_{d \to \infty} V_{\epsilon} = \tu{volume}(A)
+\end{equation}
+
+	也就是说，高维球体的体积几乎全部集中在球的表面。由不等式$1-tx \le (1-x)^t \le e^{-tx}$，可以得出
+\begin{equation}
+	\frac{V_{1-\epsilon}}{V} = (1-\epsilon)^d \le e^{-\epsilon d}
+\end{equation}
+
+\subsection{单位球的体积}
+单位球的体积显然应该定义为
+\begin{equation}
+	V(d) = \int_{x_1=-1}^{x_1=1} \int_{x_2 = -\sqrt{1-x_1^2}}^{x_2 = \sqrt{1-x_1^2}} \cdots \int_{-\sqrt{1-\sum_{i=1}^{d-1}x_i}}^{\sqrt{1-\sum_{i=1}^{d-1}x_i}} \dd x_d \cdots \dd x_2 \dd x_1
+\end{equation}
+
+在直角坐标系下积分形式较为复杂，考虑到其对称性，我们在极坐标下考虑，其体积表达式为
+\begin{equation}
+	V(d) = \int_{r=0}^{r=1}\int_{S^{d}} r^{d-1} \dd r \dd \Omega
+\end{equation}
+其中$\dd \Omega$为$d$维球体的“面积元”，此表达式可以类比三维情形：$V = \int_{r=0}^{1} \xk{\int_{S^2} \dd \Omega } r^2 \dd r$。记$A(d)$为$d$维单位球的“面积”那么有
+\begin{equation}
+	V(d) = \int_{S^d} \dd \Omega \int_{0}^{1} r^{d-1}\dd r = \frac{A(d)}{d}
+\end{equation}
+
+因此，要求出$d$维单位球体的体积，就要计算其“面积”。利用正态分布中的结果$
+\int_{-\infty}^{+\infty} e^{-x^2} \dd x = \sqrt{\pi}$，我们构造积分
+
+\begin{equation}
+I = \idotsint_{\bm{x}\in \mathbb R^d} e^{-{\sum x_i^2}} \dd x_1 \cdots \dd x_d = (\sqrt{\pi})^d
+\end{equation}
+
+另一方面，如果我们作球坐标变换，就有
+\begin{equation}
+I = A(d) \int_{0}^{+\infty} e^{-r^2} r^{d-1} \dd r = \frac{1}{2}A(d)\Gamma(\frac{d}{2})
+\end{equation}
+
+这样就确定出
+\begin{equation}
+\begin{split}
+A(d) &= \frac{2(\sqrt{\pi})^d}{\Gamma(\frac{d}{2})}
+\\
+V(d) &= \frac{2(\sqrt{\pi})^d}{d\Gamma(\frac{d}{2})}
+\end{split}
+\end{equation}
+
+
+	\subsection{赤道附近的体积}
+
+	另一个非常有趣的结果是，高维球体几乎所有的体积都集中在“赤道”附近，换句话说，如果指定向量$\bm v$的方向为“北方”，那么绝大多数单位向量$\bm u$满足$\bm{u\cdot v} = \mathcal O(1/\sqrt{d})$。换句话说，绝大多数的单位向量满足$\abs{x_1} = \mathcal{O}(1/\sqrt d)$。
+
+\begin{thm}
+对于$\forall c \ge 1, d \ge 3$，满足$\abs{x_1} \le \frac{c}{\sqrt{d-1}}$的点集的体积至少占据球体的$1-\frac{2}{c} e^{-\frac{c^2}{2}}$。
+
+\end{thm}
+
+\begin{proof}
+根据对称性，我们只需要证明对于$x_1 \ge 0$的上半球体，至多有$\frac{2}{c}e^{-\frac{c^2}{2}}$的体积满足$x_1 \ge \frac{c}{\sqrt{d-1}}$。我们将半球的上半部分记为$A$，整个半球记为$H$，也就是说我们需要证明
+\begin{equation}
+	\frac{V(A)}{V(H)} \le \frac{\tu{upper bound of V(A)}}{\tu{lower bound of V(A)}} = \frac{2}{c}e^{-\frac{c^2}{2}}
+\end{equation}
+
+$V(A)$的精确表达式为
+\begin{equation}
+	V(A) = \int_{\frac{c}{\sqrt{d-1}}}^{1} V(d-1) (1-x_1^2)^{\frac{d-1}{2}} \dd x_1
+\end{equation}
+
+利用不等式$1-x \le e^{x}$，我们有
+\begin{equation}
+V(A) \le V(d-1)\int_{\frac{c}{\sqrt{d-1}}}^{\infty} e^{-\frac{d-1}{2}x_1^2}  \dd x_1
+\end{equation}
+
+这个积分不容易计算，由于在$x \ge \frac{c}{\sqrt{d-1}}$时有$\frac{x\sqrt{d-1}}{c} \ge 1$，因此插入这一项，使得积分容易算出：
+
+\begin{equation}
+V(A) \le V(d-1) \frac{\sqrt{d-1}}{c}\int_{\frac{c}{\sqrt{d-1}}}^{\infty} x_1 e^{-\frac{d-1}{2}x_1^2} \dd x_1 = \frac{V(d-1)}{c\sqrt{d-1}} e^{-\frac{c^2}{2}}
+\end{equation}
+
+虽然我们已经有了$H$的表达式，但是其表达式较为复杂，因此我们估计一个下界。为了能消去上面得出的$\sqrt{d-1}$，我们选取上半球中高度为$\frac{1}{\sqrt{d-1}}$的圆柱，从而有
+\begin{equation}
+	V(H) \le V(d-1)(1-\frac{1}{d-1})^{\frac{d-1}{2}} \cdot \frac{1}{\sqrt{d-1}} \le \frac{V(d-1)}{2\sqrt{d-1}}
+\end{equation}
+
+综上就可以得出
+\begin{equation}
+	\frac{V(A)}{V(H)} \le \frac{ \frac{V(d-1)}{c\sqrt{d-1}} e^{-\frac{c^2}{2}}}{\frac{V(d-1)}{2\sqrt{d-1}}} = \frac{2}{c}e^{-\frac{c^2}{2}} \ \ \ \ \blacksquare
+\end{equation}
+
+\end{proof}
+
+
+从上面的分析中可以得知，任意选取两个点它们的内积大概率接近于$0$，也就是任选两个向量，它们都非常接近垂直。下面的定理可以更精确地告诉我们对于$n$个点的情形。
+
+\begin{thm}
+对于在单位球面上$n$个随机选取的点$\bm x_1, \bm x_2, \cdots, \bm x_n$，有$1-\mathcal{O}(1/n)$的可能性
+\begin{enumerate}
+\item
+对于所有的$i$都有$\abs{\bm x_i} \ge 1-\frac{2\log n}{d}$
+\item
+对于所有的$i\ne j$都有$\abs{\bm x_i \cdot \bm x_j} \le \frac{\sqrt{6\log n}}{\sqrt{d-1}}$
+\end{enumerate}
+
+\end{thm}
+
+\begin{proof}
+第一条定理根据前面我们的结果，满足$\abs{x_i} \le 1-\epsilon$的点的比例小于$e^{-\epsilon d}$。因此有
+\begin{equation}
+P(\abs{\bm x_i} \ge 1-\frac{2\log n}{d}) \le e^{-\xk{\frac{2\log n}{d}} d} = \frac{1}{n^2}
+\end{equation}
+
+根据概率公式$P(\bigvee_{i=1}^{n}x_i) \le \sum_{i=1}^{n} P(x_i)$，我们有
+\begin{equation}
+P\xk{\neg \bigvee_{i=1}^{n}\xk{\abs{\bm x_i} \ge 1-\frac{2\log n}{d}} } \ge 1-\frac{1}{n}
+\end{equation}
+
+对于第二条定理，由于共有$C_n^2 = \frac{n(n-1)}{2}$种组合，我们前面已经证明一个单位向量与另一个单位向量内积大于$\frac{c}{\sqrt{d-1}}$的概率至多是$\frac{2}{c}e^{-\frac{c^2}{2}}$，因此对于$c = \sqrt{6\log n}$，其每一对的概率为$\mathcal{o}(e^{-\frac{6\log n}{2}}) = \mathcal{O}(\frac{1}{n^3})$，因此$C_n^2$对中内积大于给定值的概率为$\mathcal{O}(1/n)$。
+\end{proof}
+
+
+
+
+\chapter{奇异值分解}
+
+\section{奇异值分解简介}
+对于矩阵$\bm A_{n\times d}$，我们将其每一行视为一个$d$维的向量，奇异值分解的目标是寻找矩阵$\bm{U_{n\times r}, D_{r\times r}, V_{r\times d}}$使得
+\begin{equation}
+	\bm A = \bm{UDV}^{T}	
+\end{equation}
+其中$\bm U, \bm V$是正交矩阵，$\bm D$是对角元全为正数对角矩阵。其中$\bm V$的列向量（也就是$\bm V^{T}$的行向量）即为“最佳近似子空间”的标准正交基向量。而$\bm U$的元素就是$\bm A$在相应基向量的投影值。也就是
+\begin{equation}
+	\bm A = \begin{bmatrix}	\bm u_1 & \bm u_2 \cdots & \bm u_r\end{bmatrix} \diag \{\sigma_1, \sigma_2, \cdots, \sigma_r\}\begin{bmatrix}	\bm v_1^T \\ \bm v_2^T \\ \vdots \\ \bm v_r^T\end{bmatrix}
+	\label{eq:svd1}
+\end{equation}
+将上述写法展开，就是
+\begin{equation}
+	\bm A = \sum_{i=1}^r \sigma_i \bm u_i \bm v_i^T
+\end{equation}
+其中的$\bm u_i$是$n\times 1$的向量，$\bm v_i$是$d\times 1$的向量。
+
+就像将$\bm x$投影到一组基向量$\bm v_1, \bm v_2, \cdots, \bm v_d$中一样，对于SVD，前$k$个向量保证$\bm A$的行向量在$k$维子空间中的投影平方和最大（距离平方和最小）。
+
+我们已经了解过特征值分解。对于方阵$\bm A$，满足$\bm A \bm x = \lambda \bm x$的向量$\bm x$称为特征向量，对应的$\lambda$称为特征值。如果$\bm A$实对称，那么$\bm A$必然有$n$个特征值，从而$\bm A$就可以分解为
+\begin{equation}
+	\bm A = \bm{P^T B P}
+\end{equation}
+其中$\bm P$是正交矩阵，$\bm B = \diag \{\lambda_1, \lambda_2, \cdots, \lambda_n\}$，$\bm P$的行向量维对应的特征向量。
+
+特征值分解对于$\bm A$有着要求。首先必须是方阵，其次必须有$n$个特征向量。但是SVD对于矩阵没有要求，我们总可以找到这样的两个由单位正交向量组成的矩阵$\bm U, \bm V$和对角矩阵$\bm D$。其中$\bm V$的列向量称为右奇异向量，$\bm U$的列向量称为左奇异向量。如果$\bm A$是可逆的，那么
+\begin{equation}
+	\bm A^{-1} = \bm V \bm D^{-1}\bm U^{T}	
+\end{equation}
+
+我们接下来将会看到，有下面的关系式成立：
+\begin{equation}
+\bm A \bm v_i = \sigma_i \bm u_i\ \ \bm A^{T} \bm u_i = \sigma_i \bm v_i	
+\end{equation}
+
+这一点不难验证，将公式$\ref{eq:svd1}$右乘
+$\begin{bmatrix}
+	\bm v_1 & \bm v_2 & \cdots & \bm v_r
+\end{bmatrix}
+$
+可知
+\begin{equation}
+	\bm A 
+	\begin{bmatrix}
+		\bm v_1 & \bm v_2 & \cdots & \bm v_r
+	\end{bmatrix}	
+	=
+	\begin{bmatrix}
+		\sigma_1\bm u_1 & \sigma_2 \bm u_2 & \cdots & \sigma_r \bm u_r
+	\end{bmatrix}
+\end{equation}
+
+左乘
+$\begin{bmatrix}
+	\bm u_1 & \bm u_2 & \cdots & \bm u_r
+\end{bmatrix}^T$
+可得
+\begin{equation}
+	\bm A ^T
+	\begin{bmatrix}
+		\bm u_1 & \bm u_2 & \cdots & \bm u_r
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+		\sigma_1\bm v_1 & \sigma_2 \bm v_2 & \cdots & \sigma_r \bm v_r
+	\end{bmatrix}
+\end{equation}
+
+换言之，$\bm A$作用于$\bm v_i$会将其变换为$\bm u_i$的$\sigma_i$倍，$\bm A^T$作用于$\bm u_i$会将其变换为$\bm v_i$的$\sigma_i$倍。注意到$\bm A^T\bm A \bm v_i = d_i^2 \bm v_i$，也就是说第$i$个奇异向量$\bm v_i$是方阵$\bm A^T A$的第$i$个特征向量。
+
+我们选取奇异向量的标准是：其生成的子空间能够让矩阵$\bm A$在其上的投影平方和最大。我们不妨考虑一维的情形。对于一个向量$\bm a_i$和一条过原点的单位方向向量为$\bm v$直线，用$\text{dist} \ i$和$\text{proj} \ i$分别代表向量$\bm a_i$到直线的距离和投影，我们有
+\begin{equation}
+	(\text{dist} \ i)^2 + (\text{proj} \ i)^2 = \Vert \bm a_1 \Vert
+	\label{eq:distAndProj}
+\end{equation}
+    
+
+那么最小化距离平方和实际上就是最大化投影平方和。前者的表述类似于最小二乘法，后者代表在同维度的子空间中最大限度地保留了原数据的信息。可能你会觉得选取投影平方和作为数据留存度的指标略显武断，但是我们随后就会看到，“平方”拥有非常良好的性质,式$\ref{eq:distAndProj}$就是其中之一。
+
+\section{奇异向量}
+
+将$n \times d$的矩阵$\bm A$的行向量视为$d$维空间的点，考虑过原点的直线，其单位向量为$\bm v$，对于$\forall \bm a \in \mathbb{R}^d$，$\bm{v \cdot a}$就是$\bm a$在$\bm v$上的投影，因此$\Vert \bm{Av}\Vert^2$即为$\bm A$中$n$个行向量在$\bm v$上的投影平方和。我们的目的是使得$\Frobenius{\bm {Av}}$最小，也就是找到
+\begin{equation}
+	\bm v_1 = \mathop{\arg\max}_{\abs{\bm v} = 1}\Frobenius{\bm {Av}} 
+\end{equation}
+
+当然$\bm v_1$可能不止一个（或者说必然不止一个），如果$\bm v_1$是奇异向量，那么$-\bm v_1$也是。随便选择一个即可，后面我们都这样处理。$\bm v_1$称为第一个奇异向量。而$\sigma_1(\bm A) = \Frobenius{\bm{Av_1}}$称为$\bm A$的第一奇异值。因此有
+\begin{equation}
+	\sigma_1^2(\bm A) = \sum_{i=1}^{n}(\bm{a_i\cdot v_1})^2
+\end{equation}
+
+即为$\bm A$的所有行向量在$\bm v_1$上的投影平方和。
+
+当然，数据未必会集中在一条线附近，可能是一个平面，换句话说，如果我们已经有了一个寻找$\bm v_1$的算法，怎么去寻找到更高维的空间？
+
+一种贪心的做法是，在$\bm v_1$的正交补空间用同样的方法寻找第二个奇异向量和相应的奇异值。也就是
+\begin{equation}
+	\bm v_2 = \mathop{\arg\max}_{\substack{\abs{\bm v} = 1 \\ \bm{v\cdot v_1} = 0}}\Frobenius{\bm {Av}} 
+\end{equation}
+	
+
+同样的方法我们可以定义下面的奇异向量，直到
+\begin{equation}
+\max_{\substack{\bm v \perp \bm{v_1, \cdots, v_r}\\\abs{\bm v} = 1}} = 0
+\end{equation}
+此时$r = \text{rank}(\bm A)$。
+
+如何保证这种贪心法的正确性呢？我们给出下面的定理。
+\begin{thm}
+	设$\bm A$是一个$n \times d$的矩阵，其奇异向量为$\bm v_1, \bm v_2 \cdots, \bm v_r$。对于$1 \le k \le r$，令$V_k = L(\bm v_1, \bm v_2 \cdots, \bm v_k)$，那么$V_k$就是$\bm A$的$k$维最佳近似子空间。
+\end{thm}
+
+\begin{proof}
+	当$k = 1$时显然成立。
+	对于$k = 2$时，假设$W = L(\bm w_1, \bm w_2)$是一个二维的子空间，我们选取$\bm w_2 \perp \bm v_1$。方法是：如果$\bm v_1 \perp W$，则任选一个即可，否则，选取$W$中垂直于$\bm v_1$投影的向量即可。这样，由$\bm v_1,\bm v_2$的定义可知$\Frobenius{\bm{Aw_1}}^2 \le \Frobenius{\bm{Av_1}}^2$，$\Frobenius{\bm{Aw_2}}^2 \le \Frobenius{\bm{Av_2}}^2$，从而有
+
+	\begin{equation}
+		\Frobenius{\bm{Aw_1}}^2 + \Frobenius{\bm{Aw_2}}^2 \le \Frobenius{\bm{Av_1}}^2 + \Frobenius{\bm{Av_1}}^2
+	\end{equation}
+
+	对于$k$维情形也可以用类似方法证明。
+\end{proof}
+
+	我们注意到$n$维向量$\bm{A v_i}$是一张记录了$\bm A$的$n$个行向量在$\bm v_i$的投影（带符号）的表格。假如我们认为$\sigma_1(\bm A) = \Frobenius{\bm{Av_1}}$就是矩阵$\bm A$在$\bm{v_1}$方向上的一部分。要让这个认识符合我们的一般认识，那么所有这样部分的平方和应该等于“$\bm A$的全部”。设$\bm a_j$是$\bm A$的第$j$个行向量，那么有
+	\begin{equation}
+		\sum_{j=1}^{n} \abs{\bm a_j}^2 = \sum_{j=1}^n \sum_{i=1}^{r} (\bm a_j \cdot \bm v_i)^2 = \sum_{i = 1}^{r} \sum_{j=1}^{n} (\bm a_j \cdot \bm v_i)^2 = \sum_{i=1}^r \sigma_i^2(\bm A)
+	\end{equation}
+
+
+	而所有行向量模方之和实际就是$\bm A$中所有元素的平方和。这就是我们前面提到的“$\bm A$的全部”，称为Frobenius范数，即
+	\begin{equation}
+		\Frobenius{\bm A}_F = \sqrt{\sum_{j, k} a_{jk}^2}
+	\end{equation}
+
+
+	我们前面已经证明了
+	\begin{equation}
+		\sum_{i=1}^r \sigma_i^2(\bm A) = \Frobenius{\bm A}_F
+		\label{eq:FrobeniusAndSingular}
+	\end{equation}
+
+	向量$\bm v_1, \bm v_2, \cdots, \bm v_r$被称为右奇异向量。用$\bm A$与其作用后正交化，即
+	\begin{equation}
+		\bm u_i = \frac{1}{\sigma_i(\bm A)} \bm{Av_i}
+	\end{equation}
+
+	我们随后将会看到，$\bm u_i$就是最大化$\Frobenius{\bm u^T \bm A}$的向量，且彼此正交，称为左奇异向量。
+
+\section{奇异值分解}
+	设$\bm A$是一个$n \times d$的矩阵，其$r$个奇异向量为$\bm v_1, \bm v_2, \cdots, \bm v_n$，对应的奇异值为\asf{\sigma}{r}.我们定义其左奇异向量为$\bm u_i = \frac{1}{\sigma_i}\bm A \bm v_i$。那么$\sigma_i \bm u_i \bm v^T$是一个秩为$1$的矩阵，其行向量就是矩阵$\bm A$的行向量“在$\bm v_i$方向的部分”，也就是$\bm A$的行向量在$\bm v_i$方向的分量的向量坐标表示。我们将要证明$\bm A$可以表示为一系列秩为$1$的矩阵之和，形如
+	\begin{equation}
+		\bm A = \sum_{i=1}^r \sigma_i \bm u_i \bm v_i^T
+	\end{equation}
+	
+	从几何上来说，每个$\bm A$中行向量代表的点被分解为它在$\bm v_i$方向的分量之和。我们也会从代数角度证明这个结论。我们先从下面的引理出发。
+	\begin{lemma}
+		如果$\bm A$和$\bm B$对于任意向量$\bm v$都有$\bm A \bm v = \bm B \bm v$，那么$\bm A = \bm B$.
+	\end{lemma}
+	\begin{lproof}
+		选取标准正交基即可。
+	\end{lproof}
+	\begin{thm}
+		设$\bm A$是一个$n \times d$的矩阵，其$r$个右奇异向量为$\bm v_1, \bm v_2, \cdots, \bm v_n$，对应的奇异值为\asf{\sigma}{r}其左奇异向量为\asf{\bm u}{r}。那么
+		\begin{equation}
+			\bm A = \sum_{i=1}^r \sigma_i \bm u_i \bm v_i^T
+		\end{equation}
+	\end{thm}
+	\begin{proof}
+		对于任意一个$\bm v_j$，我们分别用$\bm A$和$\sum_{i=1}^r \sigma_i \bm u_i \bm v_i^T$左乘，有
+		\begin{equation}
+			\sum_{i=1}^r \sigma_i \bm u_i \bm v_i^T \bm v_j = \sigma_j \bm u_j = \bm A \bm v_j
+		\end{equation}
+
+		由于任意一个向量$\bm v$都可以分解为一个与所有右奇异向量都垂直的向量和右奇异向量的线性组合，所以对于任意$\bm v$都有$\sum_{i=1}^r \sigma_i \bm u_i \bm v_i^T \bm v = \sigma_j \bm u_j = \bm A \bm v$，由上面的引理即可得出结论
+	\end{proof}
+
+	这样，我们就完成了对矩阵$\bm A$的奇异值分解。如果奇异值互异，只需要规定其序关系即得到唯一的分解。如果有相同的奇异值，那么对应的奇异向量会张成子空间，此子空间的任意一组正交基都可以作为奇异向量。
+
+\section{最佳$k$维近似}
+	设$\bm A$是一个$n \times d$的矩阵，其奇异值分解为
+	\begin{equation}
+		\bm A = \sum_{i=1}^r \sigma_i \bm u_i \bm v_i^T
+	\end{equation}
+	
+	对于任意$1 \le k \le r$，令
+	\begin{equation}
+		\bm A_k = \sum_{i=1}^k \sigma_i \bm u_i \bm v_i^T
+	\end{equation}
+	显然$\text{rank}(\bm A_k) = k$。我们随后会看到，$\bm A_k$是对$\bm A$的最佳的$k$维近似，且其误差可用F-范数估计。
+	换言之，\asf{\bm v}{k}张成的$k$维空间是所有$k$维子空间中，使$\bm A$的行向量距离平方和最小的那一个。为了证明这个结论，我们先给出下面的引理：
+	\begin{lemma}
+		$\bm A_k$的行向量是对应的$\bm A$的行向量在$V_k$的投影。
+	\end{lemma}
+	\begin{lproof}
+		设$a$是任意一个$\bm A$的行向量，由于\asf{\bm v}{k}彼此正交，因此它在$V_k$的投影就是$\sum_{i=1}^k (\bm a \cdot \bm v_i) \bm v_i^T$。因此整个矩阵$\bm A$的投影就是$\sum_{i=1}^k \bm A \bm v_i \bm v_i^T$.于是有
+		\begin{equation}
+			\sum_{i=1}^k \bm A \bm v_i \bm v_i^T = \sum_{i=1}^k \sigma_i \bm u_i \bm v_i^T = \bm A_k
+		\end{equation}
+	\end{lproof}
+	\begin{thm}
+		对于任意秩不大于$k$的矩阵$\bm B$，有
+		\begin{equation}
+			\Frobenius{\bm A - \bm A_k} \le \Frobenius{\bm A - \bm B}
+		\end{equation}
+	\end{thm}
+	\begin{proof}
+		设$\bm B$是所有秩不大于$k$的矩阵中使得$\Frobenius{\bm A - \bm B}^2$最小的那一个。设$V$是$\bm B$的行向量张成的子空间。那么$\dim V \le k$。由于$\bm B$是使得$\Frobenius{\bm A - \bm B}$最小的矩阵，因此，$\bm B$的行向量就是$\bm A$相应行向量在$V$的投影。否则，用对应的投影代替$\bm B$的行，这仍然保证了$\bm B$的行向量包含在$V$中，但是这使得$\Frobenius{\bm A - \bm B}$减小了，与$\bm B$的定义不符。
+
+		现在由于$\bm B$的行向量就是$\bm A$相应行向量在$V$的投影，而能使得距离平方和最小的子空间的投影构成的矩阵就是$\bm A_k$，因此有$\Frobenius{\bm A - \bm A_k} \le \Frobenius{\bm A - \bm B}$.$\blacksquare$
+		
+	\end{proof}
+
+	如果我们要对若干数据$\bm x$计算$\bm A \bm x$，那么每次计算要进行$nd$次乘法，加上加法的时间，时间复杂度为$\mathcal{O}(nd)$。但是如果我们用$\bm A_k$来近似代替$\bm A$，那么计算$\bm A_k \bm x$时，只需计算$k(n+d)$次乘法，时间复杂度为$\mathcal{O}(k(n+d))$。这在$k \ll \min \{n, d\}$的时候能够显著提高计算效率。那么其误差是多少呢？由于$\bm x$未知，我们应该给出一个对所有$\bm x$都符合的估计，所以我们选取最大的$\abs{(\bm A_k - \bm A)\bm x}$。当然，在$\abs{\bm x}$没有约束的话，最大值也没有界限。因此我们限定$\abs{\bm x} \le 1$。这样，我们就定义了$\bm A$的一种新的范数，即
+	\begin{equation}
+		\Frobenius{\bm A}_2 = \max_{\abs{\bm x} \le 1}\abs{\bm A \bm x}
+		\label{def:2-form}
+	\end{equation}
+	即2-范数。注意到它就是$\sigma_1(\bm A)$。
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
